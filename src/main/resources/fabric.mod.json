@@ -1,31 +1,23 @@
-package com.example.examplemod;
-
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.entity.LivingEntity;
-
-public class ExampleMod implements ModInitializer {
-    @Override
-    public void onInitialize() {
-        // Trigger after a player dies
-        ServerLivingEntityEvents.AFTER_DEATH.register((LivingEntity entity, net.minecraft.entity.damage.DamageSource source) -> {
-            if (!(entity instanceof ServerPlayerEntity victim)) return;
-
-            MinecraftServer server = victim.getServer();
-            if (server == null) return;
-
-            // Broadcast blame message
-            String msg = "Weakest Link! Blame " + victim.getName().getString() + "!";
-            server.getPlayerManager().broadcast(Text.literal(msg), false);
-
-            // Kill all other players
-            for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
-                if (p == victim) continue;
-                p.kill();
-            }
-        });
-    }
+{
+  "schemaVersion": 1,
+  "id": "weakestlink",
+  "version": "1.0.0",
+  "name": "Weakest Link",
+  "description": "If one player dies, all others die. Blame them!",
+  "authors": [
+    "YourNameHere"
+  ],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.example.examplemod.ExampleMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.3",
+    "fabric": "*",
+    "minecraft": "1.21.1",
+    "java": ">=21"
+  }
 }

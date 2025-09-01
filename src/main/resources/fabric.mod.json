@@ -1,32 +1,29 @@
-{
-  "schemaVersion": 1,
-  "id": "weakestlink",
-  "version": "1.0.0",
+package com.example.examplemod;
 
-  "name": "Weakest Link",
-  "description": "If one player dies, all others die. Blame them!",
-  "authors": [
-    "YourNameHere"
-  ],
-  "contact": {
-    "homepage": "https://github.com/YourUser/weakestlink",
-    "sources": "https://github.com/YourUser/weakestlink"
-  },
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.player.PlayerDeathCallback;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 
-  "license": "MIT",
-  "icon": "assets/weakestlink/icon.png",
+public class ExampleMod implements ModInitializer {
 
-  "environment": "*",
-  "entrypoints": {
-    "main": [
-      "com.example.examplemod.ExampleMod"
-    ]
-  },
+    @Override
+    public void onInitialize() {
+        // Register callback when any player dies
+        PlayerDeathCallback.EVENT.register((player, source) -> {
+            MinecraftServer server = player.getServer();
+            if (server == null) return;
 
-  "depends": {
-    "fabricloader": ">=0.16.3",
-    "fabric": "*",
-    "minecraft": "1.21.8",
-    "java": ">=21"
-  }
+            // Broadcast blame message
+            String msg = "Weakest Link! Blame " + player.getName().getString() + "!";
+            server.getPlayerManager().broadcast(Text.literal(msg), false);
+
+            // Kill all other players
+            for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
+                if (p == player) continue;
+                p.kill();
+            }
+        });
+    }
 }

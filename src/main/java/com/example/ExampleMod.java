@@ -1,24 +1,28 @@
-package com.example;
+package com.example.examplemod;
 
 import net.fabricmc.api.ModInitializer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.event.player.PlayerDeathCallback;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Text;
 
 public class ExampleMod implements ModInitializer {
-	public static final String MOD_ID = "modid";
+    @Override
+    public void onInitialize() {
+        // When any player dies
+        PlayerDeathCallback.EVENT.register((player, source) -> {
+            MinecraftServer server = player.getServer();
+            if (server == null) return;
 
-	// This logger is used to write text to the console and the log file.
-	// It is considered best practice to use your mod id as the logger's name.
-	// That way, it's clear which mod wrote info, warnings, and errors.
-	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+            String msg = "Weakest Link! Blame " + player.getName().getString() + "!";
+            server.getPlayerManager().broadcast(Text.literal(msg), false);
 
-	@Override
-	public void onInitialize() {
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
-
-		LOGGER.info("Hello Fabric world!");
-	}
+            // Kill all other players
+            for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
+                if (p == player) continue;
+                p.kill();
+            }
+        });
+    }
 }
